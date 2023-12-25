@@ -1,11 +1,27 @@
 import time
+import requests
 import pydirectinput
 import pyautogui
 
+limitSecondsToFarm = 5 * 60 * 60
+
 successfulExtractionImage = 'botImages/successfulExtraction.png'
+blizzardDiedDownImage = 'botImages/blizzardDiedDown.png'
+
+# Replace with your Gotify server URL and application token
+gotify_url = 'http://localhost:80'
+app_token = 'APJQrj78re2CzhV'
+
+def notify(msg):
+     # Send the notification
+    response = requests.post(f'{gotify_url}/message?token={app_token}', json=msg)
+    # Check if the notification was sent successfully
+    if response.status_code != 200:
+        print(f'Error sending notification: {response.text}')
 
 
 def mineOre():
+    checkForBlizzard()
     while pyautogui.locateOnScreen(successfulExtractionImage, confidence=.7, grayscale=True) != None:
         time.sleep(.25)
     while pyautogui.locateOnScreen(successfulExtractionImage, confidence=.7, grayscale=True) == None:
@@ -75,13 +91,13 @@ def goFromTheThirdOreToTheFirst():
     time.sleep(.4)
     pydirectinput.keyUp('a')
     pydirectinput.keyDown('s')
-    time.sleep(1.9)
+    time.sleep(1.8)
     pydirectinput.keyUp('s')
     pydirectinput.keyDown('d')
     time.sleep(1.3)
     pydirectinput.keyUp('d')
     pydirectinput.keyDown('w')
-    time.sleep(.1)
+    time.sleep(.2)
     pydirectinput.keyUp('w')
 
 def goFromtheThirdOreToTheFourth():
@@ -155,14 +171,25 @@ def goFromTheSixthOreToTheFirst():
     time.sleep(1.3)
     pydirectinput.keyUp('d')
     pydirectinput.keyDown('w')
-    time.sleep(.1)
+    time.sleep(.2)
     pydirectinput.keyUp('w')
     
 time.sleep(.5)
+def checkForBlizzard():
+    global blizzardDiedDownImage
+    if pyautogui.locateOnScreen(blizzardDiedDownImage, confidence=.7, grayscale=True):
+        notify({
+            'title': 'Blizzard died down',
+            'message': 'Blizzard died down',
+            'priority': 5
+        })
 
 # Start at the southernmost mining site
+start_time = time.time()
 i = 0
 while True:
+    if time.time() - start_time > limitSecondsToFarm:
+        break
     mineOre()
     goFromTheFirstOreToTheSecond()
     mineOre()
